@@ -1,10 +1,37 @@
 import Head from "next/head";
-import { useState } from "react";
+import { ChangeEvent, useState } from "react";
 import styles from "./index.module.css";
 
 export default function Home() {
   const [animalInput, setAnimalInput] = useState("");
   const [result, setResult] = useState();
+  const [file, setFile] = useState ();
+
+  const handleFileChange = (e) => {
+    if (e.target.files) {
+      setFile(e.target.files[0]);
+    }
+  };
+
+  const handleUploadClick = () => {
+    if (!file) {
+      return;
+    }
+
+    // 👇 Uploading the file using the fetch API to the server
+    fetch('https://httpbin.org/post', {
+      method: 'POST',
+      body: file,
+      // 👇 Set headers manually for single file upload
+      headers: {
+        'content-type': file.type,
+        'content-length': `${file.size}`, // 👈 Headers need to be a string
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => console.log(data))
+      .catch((err) => console.error(err));
+  };
 
   async function onSubmit(event) {
     event.preventDefault();
@@ -24,7 +51,7 @@ export default function Home() {
 
       setResult(data.result);
       setAnimalInput("");
-    } catch(error) {
+    } catch (error) {
       // Consider implementing your own error handling logic here
       console.error(error);
       alert(error.message);
@@ -39,17 +66,26 @@ export default function Home() {
       </Head>
 
       <main className={styles.main}>
+
+        <div>
+          <input type="file" onChange={handleFileChange} />
+
+          <div>{file && `${file.name} - ${file.type}`}</div>
+
+          <button onClick={handleUploadClick}>Upload</button>
+        </div>
+{/* 
         <img src="/dog.png" className={styles.icon} />
-        <h3>Name my pet</h3>
+        <h3>Name my pet</h3> */}
         <form onSubmit={onSubmit}>
-          <input
+          {/* <input
             type="text"
             name="animal"
             placeholder="Enter an animal"
             value={animalInput}
             onChange={(e) => setAnimalInput(e.target.value)}
-          />
-          <input type="submit" value="Generate names" />
+          /> */}
+          <input type="submit" value="Generate" />
         </form>
         <div className={styles.result}>{result}</div>
       </main>
